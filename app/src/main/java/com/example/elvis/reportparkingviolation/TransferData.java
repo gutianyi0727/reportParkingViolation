@@ -28,6 +28,7 @@ public class TransferData extends AppCompatActivity {
     private List<reporterViolation> violationCases;
     private List<LatLng> gpsCases;
     List<Integer> casesNum;
+    private static final  double EARTH_RADIUS = 6378137;//赤道半径
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -78,6 +79,9 @@ public class TransferData extends AppCompatActivity {
 
         }
     };
+    private static double rad(double d){
+        return d * Math.PI / 180.0;
+    }
 
 
     @Override
@@ -183,6 +187,9 @@ public class TransferData extends AppCompatActivity {
                     Toast.makeText(TransferData.this,"查询成功：共" +list.size() + "条数据。",Toast.LENGTH_LONG).show();
                     List<Integer> countReport = new ArrayList<>();
                     List<LatLng> reportMiddleLoc = new ArrayList<>();
+
+                    List<reporterViolation> delTrueList = list;
+
                     for(int i = 0; i < list.size() ; i++){
                         countReport.add(1);
                         Log.i("gpsll","当i= "+i+" 时list.get(i).getLLlocation().getLatitude()："+list.get(i).getLLlocation().getLatitude());
@@ -205,7 +212,24 @@ public class TransferData extends AppCompatActivity {
                             }
                         }
                         Log.i("gpsll","当i = "+i+"时 "+sumlat/countReport.get(i)+" "+sumlng/countReport.get(i));
+
+//                        delTrueList
+/*                        int item = countReport.get(i);
+                        for(int j = list.size() - 1; j > i; j-- ){
+                            if  (list.get(j).getPlateNumber().equals(list.get(i).getPlateNumber()))  {
+                                double listLat = delTrueList.get(j).getLLlocation().getLatitude();
+                                double listLon = delTrueList.get(j).getLLlocation().getLongitude();
+                                double distance = GetDistance(listLon,listLat,sumlng/countReport.get(i),sumlat/countReport.get(i));
+                                if (distance > 100){
+                                    sumlat -= listLat;
+                                    sumlng -= listLon;
+                                    item -= 1;
+                                    countReport.set(i,item);
+                                }
+                            }
+                        }*/
                         reportMiddleLoc.set(i,new LatLng(sumlat/countReport.get(i),sumlng/countReport.get(i)));
+
 
 
                     }
@@ -273,5 +297,16 @@ public class TransferData extends AppCompatActivity {
         }
         return toBedoubleGpsLat;
     }
+
+    public static double GetDistance(double lon1,double lat1,double lon2, double lat2) {
+        double radLat1 = rad(lat1);
+        double radLat2 = rad(lat2);
+        double a = radLat1 - radLat2;
+        double b = rad(lon1) - rad(lon2);
+        double s = 2 *Math.asin(Math.sqrt(Math.pow(Math.sin(a/2),2)+Math.cos(radLat1)*Math.cos(radLat2)*Math.pow(Math.sin(b/2),2)));
+        s = s * EARTH_RADIUS;
+        return s;//meter
+    }
+
 }
 
